@@ -1,9 +1,6 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class CompDijkstraPath<E extends Edge> {
+public class DijkstraHelper<E extends Edge> {
 
 
     /**
@@ -15,9 +12,14 @@ public class CompDijkstraPath<E extends Edge> {
      * @return the path, as a list, where the index represents the node and the contents represents
      * the node that should be travelled to return to from TODO
      */
-    public List<E> shortestPath(List<List<E>> graph, int from, int to) {
+    public Iterator<E> shortestPath(List<List<E>> graph, int from, int to) {
         List<Double> ssf = new ArrayList<>(graph.size());       // shortest path so far, as seen to each edge.getWeight()
         List<Integer> path = new ArrayList<>(graph.size());     // path to traverse back to from
+        for (int i = 0; i < graph.size(); i++) {
+            ssf.add(i, -1.0);
+            path.add(i, -1);
+        }
+
         Set<Integer> known = new HashSet<>();                   // set of nodes represented by their integer id
         Set<Integer> notKnown = new HashSet<>();
 
@@ -38,15 +40,16 @@ public class CompDijkstraPath<E extends Edge> {
         }
 
         // modified dijkstra, only care about to node
-        while (!known.contains(to)) {
+        while (!notKnown.isEmpty()) {
 
             // find smallest ssf
             int w = -1;             // node to search from
             double minWeight = -1;  // weight of that node
             for (Integer node : notKnown) {
-                if (minWeight == -1) minWeight = 0;
-                if (ssf.get(node) < minWeight) {
-                    minWeight = ssf.get(node);
+                double weight = ssf.get(node);
+                if (weight == -1) continue; // treat -1 as inf
+                if (weight < minWeight || minWeight == -1) {
+                    minWeight = weight;
                     w = node;
                 }
             }
@@ -54,8 +57,8 @@ public class CompDijkstraPath<E extends Edge> {
             if (minWeight == -1) throw new ShitIsFuckedException();
 
             // add smallest ssf node to known
-            notKnown.remove(w);
             known.add(w);
+            notKnown.remove(w);
 
             // make a set of follower nodes from w
             Set<Integer> followers = new HashSet<>();
@@ -76,17 +79,29 @@ public class CompDijkstraPath<E extends Edge> {
                 if (cost == -1) // should never arrive here, but
                     throw new ShitIsFuckedException();
 
-                // update shortest so far
-                double val;
-                if (ssf.get(v) == -1)  // ensure that -1 < is treated as inf
-                    val = ssf.get(w) + cost;
-                else
-                    val = Math.min(ssf.get(v), ssf.get(w) + cost);
-
-                ssf.set(v, val);
+                // update shortest so far if necessary
+                double oldWeight = ssf.get(v);
+                double newWeight = ssf.get(w) + cost;
+                if (newWeight < oldWeight || oldWeight == -1) {
+                    ssf.set(v, newWeight);
+                    path.set(v, w);
+                }
             }
         }
-        return null;    // TODO
+        // returns an iterator containing edges from "from"-node to "to"-node
+        Deque<E> out = new ArrayDeque<>();
+        int current = path.get(to); // starting node for traversing the path backwards
+        int next;
+        while (current != from) {
+            next = path.get(current);
+            // add the edge that goes from current to path(current)
+            for (E edge : graph.get(current)) {
+                if (edge.to == next)
+                    out.addFirst(edge);
+            }
+            current = next;
+        }
+        return out.iterator();
     }
 
     /**

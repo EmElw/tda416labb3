@@ -25,8 +25,7 @@ public class DirectedGraph<E extends Edge> {
     }
 
     public Iterator<E> shortestPath(int from, int to) {
-
-        return null; // TODO
+        return new DijkstraHelper<E>().shortestPath(graph, from, to);
     }
 
     public Iterator<E> minimumSpanningTree() {
