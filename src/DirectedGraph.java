@@ -12,28 +12,25 @@ public class DirectedGraph<E extends Edge> {
 
     public DirectedGraph(int noOfNodes) {
         graph = new ArrayList<>(noOfNodes);
+        for (int i = 0; i < noOfNodes; i++)
+            graph.add(new LinkedList<>());
     }
 
     public void addEdge(E e) {
         int from = e.from;
 
         List<E> followers = graph.get(from);
-        if (followers == null) {
-            graph.add(from,                 // index
-                    new LinkedList<>());    // linked list for easy adding
-            followers = graph.get(from);
-        }
 
         followers.add(e);
     }
 
     public Iterator<E> shortestPath(int from, int to) {
 
-        return null;
+        return null; // TODO
     }
 
     public Iterator<E> minimumSpanningTree() {
-        return null;
+        return null; // TODO
     }
 
 }
