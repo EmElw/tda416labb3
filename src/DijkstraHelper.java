@@ -6,16 +6,22 @@ public class DijkstraHelper<E extends Edge> {
     /**
      * Returns the path from "from" to "to" as a sequence of edges to traverse
      * or null if there is no path
+     * <p>
+     * The algorithm used is a modified version of djikstra's which stops upon
+     * reaching the "to" node
+     * <p>
+     * It works by adding "suggested" paths to a queue sorted by weight, and
+     * successively adds and removes segments that locks the shortest
+     * path to a point. Once the "to" node has been locked, the algorithm is done
      */
     public Iterator<E> shortestPath(List<List<E>> graph, int from, int to) {
-
         Set<Integer> visitedNodes = new HashSet<>();
-        Queue<QueueElement> queue = new PriorityQueue<>();  // sorted by weight to evaluate shortest paths first
+        Queue<PathToNode> queue = new PriorityQueue<>();
 
-        queue.add(new QueueElement(from, 0, new Path()));   // initial point
+        queue.add(new PathToNode(from, 0, new Path()));   // initial point
 
         while (!queue.isEmpty()) {
-            QueueElement queueElement = queue.remove();
+            PathToNode queueElement = queue.remove();
             int node = queueElement.node;
             Path path = queueElement.path;
 
@@ -34,7 +40,7 @@ public class DijkstraHelper<E extends Edge> {
                             newPath.addAll(path);
                             newPath.add(edge);
 
-                            queue.add(new QueueElement(toNode,
+                            queue.add(new PathToNode(toNode,
                                     queueElement.weight + edge.getWeight(),
                                     newPath));
                         }
@@ -43,26 +49,28 @@ public class DijkstraHelper<E extends Edge> {
             }
         }
 
+        // arrive here if there is no path between "from" and "to"
         return null;
     }
 
     /**
-     * QueueElement
-     * Implements Comparable to other QueueElements, comparing using the weight field
+     * PathToNode
+     * Represents multiple edges and their summed weight to a given node from
+     * the starting node (i.e. the "from" node)
      */
-    private class QueueElement implements Comparable<QueueElement> {
+    private class PathToNode implements Comparable<PathToNode> {
         Path path;      // a list of edges to traverse to reach node
         int node;       // the node to reach
         double weight;  // the cost of reaching that note
 
-        private QueueElement(int node, double weight, Path path) {
+        private PathToNode(int node, double weight, Path path) {
             this.node = node;
             this.weight = weight;
             this.path = path;
         }
 
         @Override
-        public int compareTo(QueueElement o) {
+        public int compareTo(PathToNode o) {
             return Double.compare(this.weight, o.weight);
         }
     }
