@@ -29,7 +29,7 @@ public class DirectedGraph<E extends Edge> {
     }
 
     public Iterator<E> minimumSpanningTree() {
-        return null; // TODO
+        return new KruskalHelper<E>().smallestSpanningTree(graph); // TODO
     }
 
 }
