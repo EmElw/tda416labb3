@@ -59,7 +59,9 @@ public class KruskalHelper<E extends Edge> {
         a.addAll(b);
 
         // update all in cc pointing to b to point to a
-        groups.replaceAll(e -> e == b ? a : e);
+        groups.replaceAll(group -> group == b ? // is it in group b?
+                                   a :          // change b to a
+                                   group);      // otherwise, don't change
 
         a.add(edge);
     }
