@@ -18,17 +18,17 @@ public class DijkstraHelper<E extends Edge> {
         Set<Integer> visitedNodes = new HashSet<>();
         Queue<PathToNode> queue = new PriorityQueue<>();
 
-        queue.add(new PathToNode(from, 0, new Path()));   // initial point
+        queue.add(new PathToNode(null, null, from, 0));   // initial point
 
         while (!queue.isEmpty()) {
             PathToNode queueElement = queue.remove();
             int node = queueElement.node;
-            Path path = queueElement.path;
+
 
             if (!visitedNodes.contains(node)) {
 
                 if (node == to) {
-                    return path.iterator();
+                    return queueElement.iterator();
                 } else {
                     visitedNodes.add(node);
 
@@ -36,13 +36,10 @@ public class DijkstraHelper<E extends Edge> {
                         int toNode = edge.to;
 
                         if (!visitedNodes.contains(toNode)) {
-                            Path newPath = new Path();
-                            newPath.addAll(path);
-                            newPath.add(edge);
-
-                            queue.add(new PathToNode(toNode,
-                                    queueElement.weight + edge.getWeight(),
-                                    newPath));
+                            queue.add(new PathToNode(edge,
+                                    queueElement,
+                                    toNode,
+                                    queueElement.weight + edge.getWeight()));
                         }
                     }
                 }
@@ -57,21 +54,42 @@ public class DijkstraHelper<E extends Edge> {
      * PathToNode
      * Represents multiple edges and their summed weight to a given node from
      * the starting node (i.e. the "from" node)
+     * <p>
+     * It is essentially "some number of edges that is a short path" plus the edge from
+     * the last node in that sequence, to this node "node"
      */
     private class PathToNode implements Comparable<PathToNode> {
-        Path path;      // a list of edges to traverse to reach node
-        int node;       // the node to reach
-        double weight;  // the cost of reaching that note
+        E edge;             // edge to previous PathToNode
+        PathToNode prev;    // previous path to node
+        int node;           // the node to reach
+        double weight;      // the cost of reaching that note
 
-        private PathToNode(int node, double weight, Path path) {
+        PathToNode(E edge, PathToNode prev, int node, double weight) {
+            this.edge = edge;
+            this.prev = prev;
             this.node = node;
             this.weight = weight;
-            this.path = path;
         }
+
 
         @Override
         public int compareTo(PathToNode o) {
             return Double.compare(this.weight, o.weight);
+        }
+
+        private Iterator<E> iterator() {
+            return makePath().iterator();
+        }
+
+        private List<E> makePath() {
+            if (prev == null) {
+                return new LinkedList<>();
+            } else {
+                List<E> l;
+                l = prev.makePath();
+                l.add(edge);
+                return l;
+            }
         }
     }
 
