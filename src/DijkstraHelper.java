@@ -100,6 +100,4 @@ public class DijkstraHelper<E extends Edge> {
         }
     }
 
-    private class Path extends ArrayList<E> {
-    }
 }
